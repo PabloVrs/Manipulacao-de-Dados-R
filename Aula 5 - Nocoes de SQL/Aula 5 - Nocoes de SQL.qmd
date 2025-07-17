@@ -1,0 +1,251 @@
+---
+title: "Aula 5 - Nocoes de SQL"
+author: "Pablo Vinícius dos Reis e Silva"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    df-print: paged
+editor: visual
+---
+
+## Exercício 1
+
+1.  Carregue a base de dados `AdventureWorksLT.db`, disponível no Moodle e liste todas suas tabelas. Na sequência, crie consultas para exibir as 10 primeiras linhas de cada tabela, para compreender a estrutura dos dados.
+
+```{r, echo = TRUE, warning = FALSE}
+library(pacman)
+pacman::p_load(DBI, RSQLite)
+
+db <- dbConnect(RSQLite::SQLite(),
+                dbname = "a5_nocoes_sql/AdventureWorksLT.db")
+
+dbListTables(db)
+
+```
+
+### Tabela "Address"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM Address LIMIT 10")
+
+```
+
+### Tabela "BuildVersion"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM BuildVersion LIMIT 10")
+
+```
+
+### Tabela "Customer"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM Customer LIMIT 10")
+
+```
+
+### Tabela "CustomerAddress"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM CustomerAddress LIMIT 10")
+
+```
+
+### Tabela "ErrorLog"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM CustomerAddress LIMIT 10")
+
+```
+
+### Tabela "Product"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM Product LIMIT 10")
+
+```
+
+### Tabela "ProductCategory"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM ProductCategory LIMIT 10")
+
+```
+
+### Tabela "ProductDescription"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM ProductDescription LIMIT 10")
+
+```
+
+### Tabela "ProductModel"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM ProductModel LIMIT 10")
+
+```
+
+### Tabela "ProductModelProductDescription"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM ProductModelProductDescription LIMIT 10")
+
+```
+
+### Tabela "SalesOrderDetail"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM SalesOrderDetail LIMIT 10")
+
+```
+
+### Tabela "SalesOrderHeader"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM SalesOrderHeader LIMIT 10")
+
+```
+
+### Tabela "sqlite_sequence"
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * FROM sqlite_sequence LIMIT 10")
+
+```
+
+## Exercício 2
+
+### a) Lista de clientes cujo nome começa com a letra C
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * 
+           FROM Customer 
+           WHERE FirstName LIKE 'A%'")
+```
+
+### b) Relação de todos os produtos com preço de custo inferior a 1000 dólares.
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT * 
+           FROM Product 
+           WHERE StandardCost < 1000")
+```
+
+### c) Relatório com o nome do produto, preço padrão, preço de venda, lucro e margem de lucro
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT Name, StandardCost, ListPrice, (ListPrice -
+           StandardCost) AS Lucro,
+           ROUND(((ListPrice - StandardCost) / ListPrice) * 100, 2) AS MargemLucro
+           FROM Product")
+```
+
+### d) Contagem de produtos por cor.
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT Color, COUNT(*) AS Contagem 
+           FROM Product 
+           GROUP BY Color")
+```
+
+### e) Relatório com o número de clientes por estados em ordem crescente.
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT StateProvince, COUNT(*) AS Frequencia
+           FROM Address
+           GROUP BY StateProvince")
+```
+
+### f) Unir as tabelas product e productCategory
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT *
+           FROM Product JOIN ProductCategory
+           ON Product.ProductCategoryID = ProductCategory.ProductCategoryID")
+```
+
+### g) Unir as tabelas customer e customerAddress
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT *
+           FROM Customer JOIN CustomerAddress
+           ON Customer.CustomerID = CustomerAddress.CustomerID")
+```
+
+## Exercício 3
+
+A empresa pretende lançar uma promoção para reduzir o estoque de produtos com um número baixo de vendas. Para isso, o setor de marketing precisa de um relatório com os 50 produtos menos vendidos. Elabore um relatório com estes produtos, com o ID do produto e a quantidade de vendas.
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT Product.ProductID, COUNT(*) AS Quantidade
+           FROM Product JOIN SalesOrderDetail
+           ON Product.ProductID = SalesOrderDetail.ProductID
+           GROUP BY Product.ProductID
+           ORDER BY Quantidade ASC
+           LIMIT 50")
+```
+
+## Exercício 4
+
+Utilize o a consulta do exercício anterior como subconsulta e crie um relatório com o nome do produto, quantidade, cor, preço original e o preço promocional, que deve receber um desconto de 20% do preço original (list price).
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT p.Name as Produto,
+           vendas.Quantidade,
+           p.Color as Cor,
+           p.ListPrice AS Preco_Original,
+           ROUND(p.ListPrice * 0.8, 2) AS Preco_Promocional
+           
+           FROM 
+           (SELECT Product.ProductID, COUNT(*) AS Quantidade
+           FROM Product JOIN SalesOrderDetail
+           ON Product.ProductID = SalesOrderDetail.ProductID
+           GROUP BY Product.ProductID
+           ORDER BY Quantidade ASC
+           LIMIT 50) AS vendas
+           
+           JOIN Product p 
+           ON vendas.ProductID = p.ProductID")
+```
+
+## Exercício 5
+
+Para planejar a produção do ano seguinte, a empresa necessita conhecer as vendas de cada um de seus produtos e a receita gerada por cada um. Crie uma consulta que retorne uma lista com nome, quantidade, preço unitário e valor total de vendas de cada produto. Ordene de forma decrescente utilizando o valor total de vendas.
+
+```{r, echo = TRUE, warning = FALSE}
+
+dbGetQuery(db, "SELECT p.Name as Produto,
+           SUM(vendas.OrderQty) AS Quantidade,
+           p.ListPrice AS Preço_Unitario,
+           ROUND(SUM(vendas.LineTotal), 2) AS Valor_Total
+           
+           FROM SalesOrderDetail vendas JOIN Product p
+           ON vendas.ProductID = p.ProductID
+           
+           GROUP BY p.ProductID, p.Name, p.ListPrice
+           ORDER BY Valor_Total DESC")
+```

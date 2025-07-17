@@ -1,0 +1,457 @@
+window._zep = window._zep || {};
+_zep.config = {
+    gamSettings: {
+        networkId: '22877339784,131912127',
+        mode: 'multi-block',
+        sharedAccount: true,
+        sharedAccountIdentifier: 'seminovos',
+    },
+    pubSettings: {
+        viewEnhancerTop: false,
+        viewEnhancerTopTemplate: 'null',
+        adLabel: '',
+        backgroundColor: '#fdfdfd',
+        zepLoading: true,
+        lazyActivation: false,
+        disableAutoInit: false,
+        desktopContainer: '1160px',
+        pbStatus: false,
+        uamStatus: false,
+        refresh: {
+            global: 90,
+            anchor: 45,
+        },
+        lazyLoading: {
+            status: true,
+            model: 'relaxado',
+        },
+        recap: {
+            enable: true,
+            list: {
+                google: true,
+                preBid: false,
+                amazon: false,
+            }
+        },
+    },
+    offerwallConfig: {
+    },
+    hbSettings: {
+    }
+};
+_zep.publisherSections = () => {
+    const classes = document.querySelector('body').classList;
+    const pathname = window.location.pathname || '';
+    if (classes.contains('r-home')) return 'home';
+    if (classes.contains('r-veiculo')) return 'article';
+    if (classes.contains('c-resultado')) return 'archive';
+    if (classes.contains('page')) return 'page';
+    return '';
+};
+_zep.placements = [{
+        enable: true,
+        refreshable: true,
+        type: 'static',
+        name: 'home-billboard01',
+        device: 'desktop',
+        section: 'home',
+        selector: `.section-search`,
+        sizes: [
+            [970, 90],
+            [728, 90]
+        ],
+        rat: false,
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'static',
+        name: 'home-billboard02',
+        device: 'desktop',
+        section: 'home',
+        selector: `.section-features`,
+        sizes: [
+            [970, 250],
+            [970, 90],
+            [728, 90],
+            [300, 250],
+            [336, 280]
+        ],
+        rat: false,
+    },
+    {
+        enable: false,
+        refreshable: true,
+        type: 'static',
+        name: 'home-billboard03',
+        device: 'desktop',
+        section: 'home',
+        selector: `.collapse-marca-categoria`,
+        sizes: [
+            [970, 250],
+            [970, 90],
+            [728, 90],
+            [300, 250],
+            [336, 280]
+        ],
+        rat: true,
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'static',
+        name: 'home-billboard01',
+        device: 'mobile',
+        section: 'home',
+        selector: `.section-search`,
+        sizes: [
+            [320, 100],
+            [300, 100],
+            [320, 50],
+            [300, 50]
+        ],
+        rat: false,
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'static',
+        name: 'home-billboard02',
+        device: 'mobile',
+        section: 'home',
+        selector: `.veiculos-destaque > .col:nth-child(6)`,
+        sizes: [
+            [320, 100],
+            [300, 100],
+            [320, 50],
+            [300, 50]
+        ],
+        rat: false,
+    },
+    {
+        enable: false,
+        refreshable: true,
+        type: 'static',
+        name: 'home-billboard03',
+        device: 'mobile',
+        section: 'home',
+        selector: `.section-features`,
+        sizes: [
+            [320, 100],
+            [300, 100],
+            [320, 50],
+            [300, 50],
+            [300, 250],
+            [336, 280]
+        ],
+        rat: false,
+    },
+    {
+        enable: false,
+        refreshable: true,
+        type: 'static',
+        name: 'home-billboard04',
+        device: 'mobile',
+        section: 'home',
+        selector: `.collapse-marca-categoria`,
+        sizes: [
+            [320, 100],
+            [300, 100],
+            [320, 50],
+            [300, 50]
+        ],
+        rat: true,
+    },
+    {
+        enable: true,
+        refreshable: false,
+        type: 'infeed',
+        name: 'archive-infeed',
+        device: 'desktop',
+        section: 'archive',
+        selector: `.anuncio-container-ad .ad-grid .r89-desktop-leaderboard-atf`,
+        sizes: [
+            [250, 250]
+        ],
+        autoads: {
+            mode: 'fixed',
+            position: [2],
+        },
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'static',
+        name: 'archive-billboard01',
+        device: 'desktop',
+        section: 'archive',
+        selector: `.resultado .conteudo`,
+        sizes: [
+            [970, 90],
+            [728, 90]
+        ],
+        rat: true,
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'infeed',
+        name: 'archive-infeed',
+        device: 'mobile',
+        section: 'archive',
+        selector: `.anuncio-container-ad .ad-list .r89-mobile-rectangle-infinite`,
+        sizes: [
+            [300, 250],
+            [250, 250]
+        ],
+        autoads: {
+            mode: 'fixed-mutation',
+            position: [1, 2, 3, 4, 5],
+            mutationSelector: ".conteudo .anuncios",
+        },
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'static',
+        name: 'archive-billboard01',
+        device: 'mobile',
+        section: 'archive',
+        selector: `.resultado .conteudo`,
+        sizes: [
+            [320, 100],
+            [300, 100],
+            [320, 50],
+            [300, 50]
+        ],
+        rat: true,
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'static',
+        name: 'article-billboard01',
+        device: 'desktop',
+        section: 'article',
+        selector: `.info-topo`,
+        sizes: [
+            [970, 90],
+            [728, 90]
+        ],
+        rat: false,
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'static',
+        name: 'article-billboard03',
+        device: 'desktop',
+        section: 'article',
+        selector: `.part-sobre-veiculo-acessorios.section-acessorios`,
+        sizes: [
+            [728, 90]
+        ],
+        rat: false,
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'static',
+        name: 'article-billboard04',
+        device: 'desktop',
+        section: 'article',
+        selector: `.part-anuncios-visitados`,
+        sizes: [
+            [728, 90]
+        ],
+        rat: false,
+    },
+    {
+        enable: true,
+        refreshable: false,
+        type: 'static',
+        name: 'article-side01',
+        device: 'desktop',
+        section: 'article',
+        selector: `.part-chat-email`,
+        sizes: [
+            [250, 250]
+        ],
+        rat: false,
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'static',
+        name: 'article-billboard01',
+        device: 'mobile',
+        section: 'article',
+        selector: `.veiculo-conteudo`,
+        sizes: [
+            [320, 100],
+            [300, 100],
+            [320, 50],
+            [300, 50]
+        ],
+        rat: true,
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'static',
+        name: 'article-billboard02',
+        device: 'mobile',
+        section: 'article',
+        selector: `.part-anuncios-relacionados`,
+        sizes: [
+            [320, 100],
+            [300, 100],
+            [320, 50],
+            [300, 50],
+            [300, 250]
+        ],
+        rat: true,
+    },
+    {
+        enable: false,
+        refreshable: true,
+        type: 'static',
+        name: 'article-billboard03',
+        device: 'mobile',
+        section: 'article',
+        selector: `.part-anuncios-relacionados`,
+        sizes: [
+            [320, 100],
+            [300, 100],
+            [320, 50],
+            [300, 50],
+            [300, 250],
+            [336, 280]
+        ],
+        rat: false,
+    },
+    {
+        enable: false,
+        refreshable: true,
+        type: 'static',
+        name: 'article-billboard04',
+        device: 'mobile',
+        section: 'article',
+        selector: `.part-anuncios-visitados`,
+        sizes: [
+            [320, 100],
+            [300, 100],
+            [320, 50],
+            [300, 50],
+            [300, 250],
+            [336, 280]
+        ],
+        rat: false,
+    },
+    {
+        enable: false,
+        refreshable: true,
+        type: 'infeed',
+        name: 'article-infeed',
+        device: 'mobile',
+        section: 'article',
+        selector: `.part-anuncios-visitados .row > .col-6`,
+        sizes: ["fluid", [320, 100],
+            [300, 100],
+            [320, 50],
+            [300, 50]
+        ],
+        autoads: {
+            mode: 'fixed',
+            position: [6, 12],
+        },
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'anchor',
+        name: 'anchor',
+        device: 'desktop',
+        sizes: [
+            [990, 90],
+            [980, 90],
+            [970, 90],
+            [728, 90],
+            [1, 1],
+            [2, 1]
+        ],
+    },
+    {
+        enable: true,
+        refreshable: true,
+        type: 'anchor',
+        name: 'anchor',
+        device: 'mobile',
+        sizes: [
+            [320, 50],
+            [320, 75],
+            [320, 100],
+            [300, 100],
+            [300, 75],
+            [300, 50],
+            [1, 1],
+            [2, 1]
+        ],
+    },
+    {
+        enable: true,
+        refreshable: false,
+        type: 'bg',
+        name: 'bg',
+        device: 'responsive',
+    }
+];
+_zep.thirdPartyTags = [
+];
+_zep.blacklist = [
+    "/faq/",
+    "/contato/",
+    "/politicas-de-privacidade/",
+    "/publicidade/",
+    "/quem-somos/",
+    "/4451359",
+    "/4354935",
+    "/4396113"
+];
+_zep.customKeyValues = () => {
+    let keyvalues = [];
+    keyvalues.push(['pps_content', 'classificados_autos']);
+    return keyvalues;
+}
+_zep.customCSS = [
+];
+_zep.overrider = [
+];
+//const urlParamsEx = new URLSearchParams(window.location.search);
+//if (urlParamsEx.get('content') === 'true') {
+_zep.PublisherProvidedSignalsConfig = {
+    pps: {
+        taxonomies: {
+            IAB_CONTENT_2_2: {
+                values: ["30"]
+            },
+        },
+    },
+};
+//}
+(function() {
+    var pathname = window.location.pathname;
+    var bodyClasses = Array.from(document.body.classList);
+    if (_zep.blacklist.indexOf(pathname) > -1) {
+        return;
+    }
+    var w = window.top,
+        d = w.document,
+        h = d.head || d.getElementsByTagName("head")[0];
+    var s = d.createElement("script");
+    s.src = "//autozep.adzep.io/autozep.js";
+    s.type = "text/javascript";
+    s.async = true;
+    s.setAttribute("data-cfasync", "false");
+    h.appendChild(s);
+})();

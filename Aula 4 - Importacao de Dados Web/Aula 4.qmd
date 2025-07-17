@@ -1,0 +1,139 @@
+---
+title: "Aula 4 - Importacao de dados Web"
+author: "Pablo Vinícius dos Reis e Silva"
+format: html
+editor: visual
+---
+
+## Aula 4 - Importação de dados - Dados da Web
+
+## Exercício 1
+
+O site Brasil API (https://brasilapi.com.br/)fornece uma série de APIs gratuitas para estudantes, desenvolvedores, empresas, dentre outros interessados. Acesse o site e apresente os dados de três APIs que você julgue interessantes. Antes de começar, leia com atenção os termos de uso.
+
+### API nº1 - BANKS
+
+```{r, echo = TRUE, warning = FALSE}
+library("pacman")
+pacman::p_load("httr", "tidyverse", "jsonlite")
+
+banks <- "https://brasilapi.com.br/api/banks/v1"
+api_banks <- GET(url = banks)
+
+bancos <- content(api_banks, "text") %>% fromJSON()  
+head(bancos)
+```
+
+Essa API conta com os dados de bancos brasileiros, bem como seu ispb, código e nome.
+
+### API nº2 - CAMBIO
+
+```{r, echo = TRUE, warning = FALSE}
+pacman::p_load("httr", "tidyverse", "jsonlite")
+
+cambio <- "https://brasilapi.com.br/api/cambio/v1/moedas"
+api_cambio <- GET(url = cambio)
+
+moedas <- content(api_cambio, "text") %>% fromJSON()  
+head(moedas)
+```
+
+Essa API traz os dados de moedas, bem como seu símbolo, tipo e nome.
+
+### API nº3 - FERIADOS
+
+```{r, echo = TRUE, warning = FALSE}
+pacman::p_load("httr", "tidyverse", "jsonlite")
+
+feriados <- "https://brasilapi.com.br/api/feriados/v1/2025"
+api_feriados <- GET(url = feriados)
+
+resultado_feriados <- content(api_feriados, "text") %>% fromJSON()  
+head(resultado_feriados)
+```
+
+Já a API nº3 importa os dados dos feriados nacionais no ano de 2025, bem como sua respectiva data.
+
+## Exercício 2
+
+O site Seminovos BH (https://seminovos.com.br/carro) é um agregador de anúncios de carros à venda no estado de Minas Gerais. Nele é possível filtrar os anúncios por diversas características. Utilize as técnicas de webscraping para produzir um data frame com os carros disponíveis para venda na cidade de Ouro Preto. Desconsidere os opcionais. Desafio: Após criar o data frame, crie uma coluna com uma string que contenha os opcionais de cada veículo.
+
+```{r, echo = TRUE, warning = FALSE}
+
+pacman::p_load("rvest", "httr", "stringr")
+
+pagina <- read_html("Carros Novos E Seminovos Em Ouro Preto.html")
+
+title <- pagina %>%
+  html_nodes(".title") %>%  
+  html_text() %>%
+  str_trim()  
+#print(title)
+
+#preço
+precos <- pagina %>%
+  html_nodes(".value") %>%  
+  html_text() %>%
+  str_trim() %>%
+  gsub("\n", "", .) %>%  
+  gsub("\\s+", " ", .)  
+#print(precos)
+
+
+#km
+kms <- pagina %>%
+  html_nodes(".kilometragem")%>%
+  html_text() %>%
+  str_trim() 
+#print(kms)
+
+#combustivel
+combustivel <- pagina %>%
+  html_nodes(".combustivel")%>%
+  html_text() %>%
+  str_trim() 
+#print(combustivel)
+
+#ano
+ano <- pagina %>%
+  html_nodes(".ano") %>%
+  html_text() %>%
+  str_trim() 
+#print(ano)
+
+# Remover duplicatas
+#print(kms)
+kms <- kms[-1]
+impat_indices <- seq(2, length(kms), by = 2)  
+# Remover os valores dos índices especificados
+kms <- kms[-impat_indices]
+#print(kms)
+#length(kms)
+
+#print(combustivel)
+combustivel <- combustivel[-1]
+impat_indices <- seq(2, length(combustivel), by = 2)  
+# Remover os valores dos índices especificados
+combustivel <- combustivel[-impat_indices]
+#print(combustivel)
+#length(combustivel)
+
+#print(ano)
+ano <- ano[-1]
+impat_indices2 <- seq(2, length(ano), by = 2)  
+# Remover os valores dos índices especificados
+ano <- ano[-impat_indices2]
+#print(ano)
+#length(ano)
+
+
+# criando o data.frame
+tabela <- tibble(
+  Titulo = title,
+  Preco = precos,
+  Kilometragem = kms,
+  Combustivel = combustivel,
+  Ano = ano
+)
+print(tabela)
+```

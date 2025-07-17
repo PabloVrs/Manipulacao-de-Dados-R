@@ -1,0 +1,170 @@
+---
+title: "Aula 3 - Importacao de Dados"
+autor: "Pablo Vinícius dos Reis e Silva"
+format: "html"
+editor_options:
+  chunk_output_type: inline
+---
+
+## Leitura e Importação de Base de dados
+
+Nesse documento, trabalharemos a leitura e importação de diversas bases de dados de diferentes tipos e formatos.
+
+## Base 1: carros_venda_webmotors.txt
+
+```{r, echo = TRUE, message = FALSE}
+library("pacman")
+pacman::p_load("tidyverse")
+base1 <- read.table("a3_texto_planilhas/carros_venda_webmotors.txt", header = TRUE, sep = "\t")
+class(base1)
+glimpse(base1)
+```
+
+Esta base contém dados de vendas de carros, com informações dos carros e valores.
+
+| Variável      | Descrição                                   |
+|---------------|---------------------------------------------|
+| carro         | Nome do carro.                              |
+| especificacao | Especificação detalhada do veículo.         |
+| cor           | Cor do veículo.                             |
+| km            | Quilometragem do veículo.                   |
+| anomod        | Ano de fabricação e ano do modelo do carro. |
+| preco         | Valor do anúncio.                           |
+
+## Base 2: tabela_brasileiro.txt
+
+```{r, echo = TRUE, message = FALSE}
+library(dplyr)
+base2 <- read.table("a3_texto_planilhas/tabela_brasileiro.txt", header = TRUE, sep = ";", dec = ",", stringsAsFactors = TRUE)
+class(base2)
+glimpse(base2)
+```
+
+Esta base contém dados da tabela do campeonato brasileiro de futebol, com informações dos 20 times compostos.
+
+| Variável | Descrição                       |
+|----------|---------------------------------|
+| p        | Pontos do time.                 |
+| j        | Número de partidas jogadas.     |
+| v        | Número de vitórias.             |
+| e        | Número de empates.              |
+| d        | Número de derrotas.             |
+| gp       | Número de gols pró.             |
+| gc       | Número de gols sofridos.        |
+| sg       | Saldo de gols.                  |
+| aprov    | Taxa de aproveitamento do time. |
+| class    | Posição no campeonato.          |
+
+## Base 3: Mens_Boston_Marathon_Winners.csv
+
+```{r, echo = TRUE, message = FALSE}
+library(dplyr)
+base3 <- read.csv("a3_texto_planilhas/Mens_Boston_Marathon_Winners.csv")
+class(base3)
+glimpse(base3)
+```
+
+Esta base contém dados dos vencedores da Maratona Masculina de Boston dos anos de 1897 à 2022.
+
+| Variável         | Descrição                            |
+|------------------|--------------------------------------|
+| Year             | Ano da Maratona.                     |
+| Winner           | Nome do vencedor.                    |
+| Country          | Nacionalidade do Vencedor.           |
+| Time             | Tempo de corrida do Vencedor.        |
+| Distance..Miles. | Distância percorrida em milhas.      |
+| Distance..KM.    | Distância percorrida em quilômetros. |
+
+## Base 4: pos_graduacao_ufop21.xlsx
+
+```{r, echo = TRUE, message = FALSE}
+pacman::p_load(readxl)
+base4 <- read_xlsx("a3_texto_planilhas/pos_graduacao_ufop21.xlsx", sheet = 1)
+class(base4)
+glimpse(base4)
+```
+
+Esta base contém dados dos programas de pós graduacação que ocorreram na UFOP no ano de 2021.
+
+### Variáveis:
+
+-   Calendário
+-   Ano do Calendário
+-   Data-Hora do Envio
+-   Código do PPG
+-   Nome do PPG
+-   Área de Avaliação
+-   Área Básica
+-   Regime Letivo
+-   IES sigla
+-   IES Nome
+-   Data de Início
+-   Data de Fim
+-   Código do Curso
+-   Nome do Curso
+-   Nível do Curso
+
+## Base 5: SalesPerformance.sav
+
+```{r, echo = TRUE, message = FALSE}
+pacman::p_load("haven")
+base5 <- read_spss("a3_texto_planilhas/SalesPerformance.sav")
+class(base5)
+glimpse(base5)
+str(base5)
+```
+
+Esta base contém dados de grupos de vendas e suas respectivas performances em um exame.
+
+| Variável | Descrição               |
+|----------|-------------------------|
+| Group    | Sales training group.   |
+| Perform  | Score on training exam. |
+
+## Base 6: 3c_sisu_2024_ufop.pdf
+
+```{r, echo = TRUE, message = FALSE}
+pacman::p_load("pdftools")
+base6 <- pdf_text("a3_texto_planilhas/3c_sisu_2024_ufop.pdf")
+
+#Vamos verificar algumas características do documento:
+glimpse(base6)
+
+#Exibição da primeira página
+base6[1]
+
+base6[1] %>% 
+  str_split(pattern = "\n")
+
+tabela_sisu <- base6 %>% 
+  .[1] %>% #Seleção da primeira página
+  str_split(pattern = "\n") %>% #Divisão do texto pelo caractere \n
+  unlist %>% #Conversão de lista em vetor
+  .[44:59] %>% #Seleção das linhas 44 a 59
+  str_split("\\s{2}") %>% #separação de colunas por espaço duplo
+  lapply(function(x)x[x!=""]) %>% #Remoção de elementos vazios
+  unlist %>% #Conversão de lista em vetor
+  str_trim #Remoção de espaços vazios no início e fim dos textos
+
+#Unindo as posições 33 e 37, que contem os mesmos dados
+tabela_sisu[37] <- paste(tabela_sisu[33], "-", tabela_sisu[37])
+tabela_sisu <- tabela_sisu[-33]
+tabela_sisu 
+
+tabela_sisu %>% #Converte os dados em uma matriz
+  matrix(ncol = 4, byrow = T) %>% #Converte a matriz em dataframe
+  as.data.frame.matrix() %>% #Atribuição dos nomes de colunas
+  rename("curso" = "V1", "cpf" = "V2", 
+         "cota" = "V3", "situacao" = "V4") #Renomear as colunas
+
+
+```
+
+Esta base contém dados de participantes do SISU para ingresso na UFOP.
+
+| Variável        | Descrição                  |
+|-----------------|----------------------------|
+| Curso           | Nome do Curso.             |
+| CPF             | CPF do Candidato.          |
+| Reserva de Vaga | Tipo da Vaga utilizada.    |
+| Resultado       | Resultado do participante. |
