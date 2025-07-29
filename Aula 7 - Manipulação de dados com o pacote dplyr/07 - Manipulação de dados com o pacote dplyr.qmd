@@ -1,0 +1,171 @@
+---
+title: "07 - Organização e transformação de dados com o pacote dplyr"
+author: "Pablo Vinícius dos Reis e Silva"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    df-print: paged
+  
+editor: visual
+---
+
+## Exercícios
+
+## Utilizando as bases de dados flights, wheather e planes, realize as seguintes transformações:
+
+### 1. Crie variáveis que indiquem a situação do voo em relação ao tempo de chegada e partida, se saíram/chegaram atrasados, no horário ou adiantados.
+
+```{r, echo = TRUE, warning = FALSE}
+pacman::p_load("nycflights13", "tidyverse")
+
+atrasados <- function(x){
+  case_when(
+    x < 0 ~ "Adiantado",
+    x == 0 ~ "No horário",
+    x > 0 ~ "Atrasado"
+  )
+}
+
+
+df_situacao = flights %>%
+  mutate(across(
+    .cols = c(dep_delay, arr_delay),
+    .fn = atrasados,
+    .names = "{.col}_novo")) %>%
+      rename(saída = dep_delay_novo, chegada = arr_delay_novo) %>%
+        relocate(c(saída, chegada))
+
+df_situacao  
+```
+
+### 2.No novo banco de dados, selecione os voos do mês de janeiro de 2013 e agregue as informações de temperatura e das características dos aviões.
+
+```{r, echo = TRUE, warning = FALSE}
+
+df_join = df_situacao %>% 
+  filter((year == 2013) & (month == 1)) %>%
+  
+  left_join(planes, by = "tailnum") %>%
+  left_join(weather, by = c("origin", "time_hour", "month", "day", "hour")) %>%
+    
+    select("month", "day", "flight", "saída", "chegada", "temp", "manufacturer", "model", "precip")
+
+df_join
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+### 3.Crie uma variável que deve verificar se a temperatura está acima ou abaixo de zero.
+
+```{r, echo = TRUE, warning = FALSE}
+
+df_join_completo = df_situacao %>%
+  left_join(planes, by = "tailnum") %>%
+  left_join(weather, by = c("origin", "time_hour", "month", "day", "hour")) %>%
+  mutate(temp = (temp - 32) / 1.8) %>%
+    mutate(situacao_temp = case_when(
+        temp < 0 ~ "Negativo",
+        temp >= 0 ~ "Positivo"
+    )
+  ) %>%
+  relocate(situacao_temp, .after = temp)
+
+df_join_completo
+```
+
+### 4. Verifique o desempenho relativo de cada fabricante em relação à situação do voo sobre as chegadas.
+
+```{r, echo = TRUE, warning = FALSE}
+
+atrasos = df_join_completo %>%
+  filter(!is.na(manufacturer), !is.na(chegada)) %>%
+    group_by(manufacturer, chegada) %>%
+      summarise(total_voos = n(), .groups = 'drop') %>%
+  
+  group_by(manufacturer) %>%
+    mutate(percentual = total_voos/sum(total_voos) * 100) %>%
+      ungroup() %>%
+        relocate(percentual, .after = chegada) %>%
+          arrange(manufacturer, desc(percentual))
+
+atrasos
+```
+
+### 5. Verifique se a frequência de atrasos está relacionada à presença de precipitações no aeroporto de destino e à temperatura acima ou abaixo de zero.
+
+```{r, echo = TRUE, warning = FALSE}
+
+precipitacao_chegada = df_situacao %>%
+  left_join(planes, by = "tailnum") %>%
+  left_join(weather, by = c("origin", "time_hour", "month", "day", "hour")) %>%
+  
+  filter(!is.na(precip), !is.na(chegada)) %>%
+  mutate(precipitacao = ifelse(precip > 0, "Com precipitacao", "Sem precipitacao")) %>%
+    group_by(precipitacao, chegada) %>%
+      summarise(total_voos = n(), .groups = 'drop') %>%
+        group_by(precipitacao) %>%
+          mutate(percentual_precip = total_voos/sum(total_voos) * 100) %>%
+            relocate(chegada) %>%
+              arrange(chegada) 
+
+cores_chegada <- c(
+  "Atrasado"   = "red",
+  "Adiantado"  = "green",
+  "No horário" = "blue"
+)
+
+ggplot(precipitacao_chegada, aes(x = chegada, y = percentual_precip, fill = chegada)) +
+  geom_col(show.legend = FALSE) +  # Cria as barras
+  geom_text(aes(label = paste0(round(percentual_precip, 1), "%")), vjust = -0.5) + # Adiciona os rótulos de %
+  facet_wrap(~ precipitacao) +
+  scale_fill_manual(values = cores_chegada) + 
+  labs(
+    title = "Impacto da Precipitação na Pontualidade dos Voos",
+    x = "Situação da Chegada",
+    y = "Percentual de Voos (%)"
+  ) +
+  theme_minimal() +
+  ylim(0, 75) # Ajusta o limite do eixo Y para melhor visualização
+
+```
+
+Podemos perceber que a porcentagem de atrasados quando há precipitação é maior que quando não há precipitação
+
+```{r, echo = TRUE, warning = FALSE}
+
+temp_chegada = df_join_completo %>%
+  left_join(planes, by = "tailnum") %>%
+  left_join(weather, by = c("origin", "time_hour", "month", "day", "hour")) %>%
+  
+  filter(!is.na(situacao_temp), !is.na(chegada)) %>%
+    group_by(situacao_temp, chegada) %>%
+      summarise(total_voos = n(), .groups = 'drop') %>%
+        group_by(situacao_temp) %>%
+          mutate(percentual_temp = total_voos/sum(total_voos) * 100) %>%
+            relocate(chegada) %>%
+              arrange(chegada)
+
+
+cores_chegada <- c(
+  "Atrasado"   = "red",
+  "Adiantado"  = "green",
+  "No horário" = "blue"
+)
+
+ggplot(temp_chegada, aes(x = chegada, y = percentual_temp, fill = chegada)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(percentual_temp, 1), "%")), vjust = -0.5) +
+  facet_wrap(~ situacao_temp) + 
+  scale_fill_manual(values = cores_chegada) +
+  labs(
+    title = "Impacto da Temperatura na Pontualidade dos Voos",
+    x = "Situação da Chegada",
+    y = "Percentual de Voos (%)"
+  ) +
+  theme_minimal() +
+  ylim(0, 70)
+
+```
+
+Já em relação à temperatura, não apresenta tanta diferença.
