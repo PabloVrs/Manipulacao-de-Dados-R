@@ -1,0 +1,193 @@
+---
+title: "09 - Visualização de Dados com o ggplot"
+author: "Pablo Vinícius dos Reis e Silva"
+format: html
+editor: visual
+---
+
+## Exercícios
+
+Utilize o banco de dados dados_mostra.csv, disponível no Moodle, para gerar os seguintes gráficos usando ggplot.
+
+### 1. Evolução do número de visitas por hora.
+
+```{r, echo=TRUE, warning = FALSE}
+pacman::p_load(tidyverse, ggplot2, forcats)
+
+dados <- read.csv2("a9_ggplot/dados_mostra.csv", sep = ",")
+
+dados_hora <- dados %>% rename(horario = Carimbo.de.data.hora) %>%
+  mutate(hora = hour(dmy_hms(horario))) %>%
+  count(hora) %>% rename(n_visitas = n)
+  
+ggplot(dados_hora, aes(x = hora, y = n_visitas)) + 
+  geom_line(color = "steelblue", size = 1) +
+  geom_point(color = "steelblue", size = 3) +
+  geom_text(aes(label = n_visitas, y = n_visitas + 1), size = 3) +
+  xlab("Hora") +
+  ylab("Número de visitas") 
+
+```
+
+#### O número de visitas começa devagar, com apenas 1 visita às 11 horas e de 12 às 16 horas as visitas variam entre 11 e 20 por hora, totalizando 85 visitas.
+
+### 2. Pessoas que ouviram e não ouviram falar do curso de Estatística.
+
+```{r, echo=TRUE, warning=FALSE}
+
+dados %>% rename(conhece_profissao = Você.já.tinha.ouvido.falar.profissão.Estatístico.Cientista.de.Dados) %>%
+ggplot(aes(x = conhece_profissao, fill = conhece_profissao)) + 
+  geom_bar() +
+  xlab("Conhece a profissão") +
+  ylab("Número de Pessoas") +
+  theme(legend.position = "None")
+
+```
+
+#### Com o gráfico, podemos ver que a quantidade de pessoas que conheciam a profissão é bem superior às que não conhecem, mais que o dobro.
+
+### 3. Opiniões sobre o curso de Estatística após a apresentação.
+
+```{r, echo=TRUE, warning=FALSE}
+
+dados %>% 
+  rename(opiniao = Depois.de.nossa.apresentação..o.que.você.achou.do.curso.de.Estatística.e.Ciência.de.Dados.) %>%
+  mutate(opiniao = reorder(opiniao, opiniao, FUN = function(x) - length(x))) %>% 
+  ggplot(aes(x = opiniao, fill = opiniao)) + 
+  geom_bar() +
+  
+  labs(
+    x = NULL, 
+    y = "Número de Pessoas",
+    fill = "Opinião" 
+  ) +
+  
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    legend.text = element_text(size = 8)
+  )
+
+```
+
+#### Podemos concluir que a quantidade de pessoas que podem e que certamente vão considerar o curso como uma das opções é maior que as outras opiniões. Poucas pessoas não se interessaram ou têm outras prioridades.
+
+### 4. Informações que mais chamaram a atenção dos visitantes
+
+```{r, echo=TRUE, warning=FALSE}
+
+dados %>% 
+  rename(atencao = Dessas.informações..qual.te.chamou.mais.atenção.) %>%
+  mutate(atencao_agrupada = fct_lump_n(atencao, n = 5, other_level = "Outros")) %>%
+  
+  ggplot(aes(y = fct_rev(fct_infreq(atencao_agrupada)))) +
+  geom_bar(fill = "steelblue") +
+
+  geom_text(stat='count', aes(label=..count..), hjust = -0.2, size = 3.5) +
+  
+  labs(
+    y = "Motivo de Interesse",
+    x = "Número de Pessoas"
+  ) +
+  
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    panel.grid.major.y = element_blank())
+
+```
+
+#### De acordo com o gráfico, podemos afirmar que o maior motivo de interesse para o curso são as áreas de trabalho e empresas nas quais se pode trabalhar, totalizando 26 pessoas.
+
+### 5. Cidade de origem.
+
+```{r, echo=TRUE, warning=FALSE}
+
+dados %>%
+  mutate(Cidade.de.origem = reorder(Cidade.de.origem, Cidade.de.origem, FUN = function(x) + length(x))) %>% 
+  
+ggplot(aes(x = Cidade.de.origem, fill = Cidade.de.origem)) + 
+  geom_bar() +
+  xlab("Cidade de Origem") +
+  ylab("Número de Pessoas") +
+  theme(legend.position = "None") +
+  coord_flip()
+
+```
+
+#### O maior número de pessoas são de Ouro Preto e região (Ouro Preto, Conselheiro Lafaeiete, Mariana e Itabirito).
+
+### 6. Disponibilidade em receber e-mails por conhecimento prévio sobre o curso.
+
+```{r, echo=TRUE, warning=FALSE}
+
+dados %>% 
+  rename(conhecimento_previo = Você.já.tinha.ouvido.falar.profissão.Estatístico.Cientista.de.Dados,
+    receber_email = Gostaria.de.receber.infomações.sobre.nosso.curso.por.e.mail.
+  ) %>%
+  
+
+  ggplot(aes(x = conhecimento_previo, fill = receber_email)) +
+  
+  geom_bar(position = "dodge") +
+  
+  geom_text(
+    stat = 'count', 
+    aes(label = ..count..), 
+    position = position_dodge(width = 0.9), 
+    vjust = -0.5,
+    size = 3.5
+  ) +
+  
+  labs(
+    x = "Já tinha ouvido falar do curso?",
+    y = "Número de Pessoas",
+    fill = "Aceita receber e-mails?" 
+  ) 
+  
+```
+
+#### Cerca de 60% das pessoas que já ouviram falar do curso, aceitaram receber e-mails, enquanto 75% das pessoas que não ouviram falar, estiveram dispostas.
+
+### 7. Disponibilidade em receber e-mails por informações que mais chamaram atenção.
+
+```{r, echo=TRUE, warning=FALSE}
+
+dados_com_temas <- dados %>%
+
+  rename(
+    atencao = Dessas.informações..qual.te.chamou.mais.atenção.,
+    receber_email = Gostaria.de.receber.infomações.sobre.nosso.curso.por.e.mail.
+  ) %>%
+
+  mutate(tema_interesse = case_when(
+    atencao %in% c("A remuneração da profissão", "Tanto as áreas de atuação quanto a remuneração.") ~ "Remuneração e Mercado",
+    atencao %in% c("A possibilidade de trabalhar em home-office", "A flexibilidade do curso") ~ "Flexibilidade e Estilo de Vida",
+    atencao %in% c("Envolve programação e banco de dados", "Programação em R") ~ "Habilidades Técnicas",
+    atencao %in% c("As áreas de trabalho e empresas nas quais se pode trabalhar.", "As oportunidades que a profissão oferece") ~ "Oportunidades de Carreira",
+    
+    TRUE ~ "Outros"
+  ))
+
+ggplot(dados_com_temas, aes(x = tema_interesse, fill = receber_email)) +
+  
+  geom_bar(position = "fill") +
+  
+  labs(
+    x = "Principal Tema de Interesse",
+    y = "Proporção de Respostas",
+    fill = "Aceita receber e-mails?"
+  ) +
+  
+  scale_y_continuous(labels = scales::percent) +
+  
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "top"
+  )
+  
+
+```
+
+#### O principal tema de interesse das pessoas que aceitaram receber os e-mails foram pelas oportunidas de carreira.
