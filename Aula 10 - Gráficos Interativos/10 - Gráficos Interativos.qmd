@@ -1,0 +1,183 @@
+---
+title: "10 - Gráficos Interativos"
+author: "Pablo Vinícius dos Reis e Silva"
+format: html
+editor: visual
+---
+
+## Exercício 1
+
+## Utilize o banco de dados dados_mostra.csv, disponível no Moodle, para gerar os seguintes gráficos usando o pacote plotly:
+
+### 1. Evolução do número de visitas por hora.
+
+```{r, echo=TRUE, warning = FALSE}
+pacman::p_load(tidyverse, ggplot2, forcats, plotly)
+
+dados <- read.csv2("a9_ggplot/dados_mostra.csv", sep = ",")
+
+dados_hora <- dados %>% rename(horario = Carimbo.de.data.hora) %>%
+  mutate(hora = hour(dmy_hms(horario))) %>%
+  count(hora) %>% rename(n_visitas = n)
+  
+p <- ggplot(dados_hora, aes(x = hora, y = n_visitas)) + 
+  geom_line(color = "steelblue", size = 1) +
+  geom_point(color = "steelblue", size = 3) +
+  xlab("Hora") +
+  ylab("Número de visitas")
+
+ggplotly(p)
+```
+
+#### O número de visitas começa devagar, com apenas 1 visita às 11 horas e de 12 às 16 horas as visitas variam entre 11 e 20 por hora, totalizando 85 visitas.
+
+### 2. Pessoas que ouviram e não ouviram falar do curso de Estatística.
+
+```{r, echo=TRUE, warning=FALSE}
+
+p <- dados %>% rename(conhece_profissao = Você.já.tinha.ouvido.falar.profissão.Estatístico.Cientista.de.Dados) %>%
+  count(conhece_profissao) %>% 
+  plot_ly(x = ~conhece_profissao, y = ~n, color = ~conhece_profissao) %>% 
+  add_bars() %>% 
+  layout(xaxis = list(title = "Conhece a profissão?"),
+         yaxis = list(title = "Número de pessoas"))
+
+p
+```
+
+#### Com o gráfico, podemos ver que a quantidade de pessoas que conheciam a profissão é bem superior às que não conhecem, mais que o dobro.
+
+### 3. Opiniões sobre o curso de Estatística após a apresentação.
+
+```{r, echo=TRUE, warning=FALSE}
+
+p <- dados %>% 
+  rename(opiniao = Depois.de.nossa.apresentação..o.que.você.achou.do.curso.de.Estatística.e.Ciência.de.Dados.) %>%
+  mutate(opiniao = reorder(opiniao, opiniao, FUN = function(x) - length(x))) %>% 
+  count(opiniao) %>% 
+  plot_ly(x = ~opiniao, y = ~n, color = ~opiniao) %>% 
+  add_bars() %>% 
+  layout(xaxis = list(title = "Opinião", showticklabels = FALSE),
+         yaxis = list(title = "Número de pessoas"))
+
+p
+```
+
+#### Podemos concluir que a quantidade de pessoas que podem e que certamente vão considerar o curso como uma das opções é maior que as outras opiniões. Poucas pessoas não se interessaram ou têm outras prioridades.
+
+### 4. Informações que mais chamaram a atenção dos visitantes
+
+```{r, echo=TRUE, warning=FALSE}
+
+p <- dados %>% 
+  rename(atencao = Dessas.informações..qual.te.chamou.mais.atenção.) %>%
+  mutate(atencao_agrupada = fct_lump_n(atencao, n = 5, other_level = "Outros")) %>%
+  count(atencao_agrupada) %>% 
+  mutate(atencao_agrupada = fct_reorder(atencao_agrupada, n, .desc = TRUE)) %>%
+  plot_ly(x = ~atencao_agrupada, y = ~n, color = ~atencao_agrupada) %>% 
+  add_bars() %>% 
+  layout(xaxis = list(title = "O que chamou mais atenção?", showticklabels = FALSE),
+         yaxis = list(title = "Número de pessoas"))
+
+p
+```
+
+#### De acordo com o gráfico, podemos afirmar que o maior motivo de interesse para o curso são as áreas de trabalho e empresas nas quais se pode trabalhar, totalizando 26 pessoas.
+
+### 5. Cidade de origem.
+
+```{r, echo=TRUE, warning=FALSE}
+
+p <- dados %>%
+  mutate(cidade_agrupada = fct_lump_n(Cidade.de.origem, n = 7, other_level = "Outros")) %>%
+  count(cidade_agrupada, name = "n") %>%
+  mutate(cidade_agrupada = fct_reorder(cidade_agrupada, n)) %>% 
+  plot_ly(y = ~cidade_agrupada, x = ~n, type = "bar", orientation = "h",
+          hovertemplate = '<b>%{y}</b><br>Pessoas: %{x}<extra></extra>') %>% 
+  add_text(x = ~n, text = ~n, textposition = 'outside',
+  showlegend = FALSE) %>%
+  layout(
+  title = "Principais Cidades", # Um título claro
+  yaxis = list(title = ""), # Remove o título do eixo Y, pois as categorias são claras
+  xaxis = list(title = "Número de pessoas")
+)
+p
+```
+
+#### O maior número de pessoas são de Ouro Preto e região (Ouro Preto, Conselheiro Lafaeiete, Mariana e Itabirito).
+
+### 6. Disponibilidade em receber e-mails por conhecimento prévio sobre o curso.
+
+```{r, echo=TRUE, warning=FALSE}
+
+p <- dados %>% 
+  rename(conhecimento_previo = Você.já.tinha.ouvido.falar.profissão.Estatístico.Cientista.de.Dados,
+    receber_email = Gostaria.de.receber.infomações.sobre.nosso.curso.por.e.mail.
+  ) %>%
+  
+
+  ggplot(aes(x = conhecimento_previo, fill = receber_email)) +
+  
+  geom_bar(position = "dodge") +
+  
+  geom_text(
+    stat = 'count', 
+    aes(label = ..count..), 
+    position = position_dodge(width = 0.9), 
+    vjust = -0.5,
+    size = 3.5
+  ) +
+  
+  labs(
+    x = "Já tinha ouvido falar do curso?",
+    y = "Número de Pessoas",
+    fill = "Aceita receber e-mails?" 
+  ) 
+  
+ggplotly(p)
+```
+
+#### Cerca de 60% das pessoas que já ouviram falar do curso, aceitaram receber e-mails, enquanto 75% das pessoas que não ouviram falar, estiveram dispostas.
+
+### 7. Disponibilidade em receber e-mails por informações que mais chamaram atenção.
+
+```{r, echo=TRUE, warning=FALSE}
+
+dados_com_temas <- dados %>%
+
+  rename(
+    atencao = Dessas.informações..qual.te.chamou.mais.atenção.,
+    receber_email = Gostaria.de.receber.infomações.sobre.nosso.curso.por.e.mail.
+  ) %>%
+
+  mutate(tema_interesse = case_when(
+    atencao %in% c("A remuneração da profissão", "Tanto as áreas de atuação quanto a remuneração.") ~ "Remuneração e Mercado",
+    atencao %in% c("A possibilidade de trabalhar em home-office", "A flexibilidade do curso") ~ "Flexibilidade e Estilo de Vida",
+    atencao %in% c("Envolve programação e banco de dados", "Programação em R") ~ "Habilidades Técnicas",
+    atencao %in% c("As áreas de trabalho e empresas nas quais se pode trabalhar.", "As oportunidades que a profissão oferece") ~ "Oportunidades de Carreira",
+    
+    TRUE ~ "Outros"
+  ))
+
+p <- ggplot(dados_com_temas, aes(x = tema_interesse, fill = receber_email)) +
+  
+  geom_bar(position = "fill") +
+  
+  labs(
+    x = "Principal Tema de Interesse",
+    y = "Proporção de Respostas",
+    fill = "Aceita receber e-mails?"
+  ) +
+  
+  scale_y_continuous(labels = scales::percent) +
+  
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "top"
+  )
+  
+ggplotly(p)
+```
+
+#### O principal tema de interesse das pessoas que aceitaram receber os e-mails foram pelas oportunidas de carreira.
